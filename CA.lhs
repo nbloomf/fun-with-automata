@@ -4,7 +4,7 @@ title: Fun with automata
 
 Let's draw some one dimensional cellular automata!
 
-![](../docs/img/rule30-200x100.png)
+![](docs/img/rule30-200x100.png)
 
 > module CA where
 > 
@@ -229,16 +229,16 @@ Here's some examples. These take a few seconds to render. (View image to zoom in
 $> renderPng "foo.png" (withBits [0]) (0,1000) (-1000,1000)
 ~~~
 
-![](../docs/img/rule30-2000x1000.png)
+![](docs/img/rule30-2000x1000.png)
 
 ~~~
 $> renderPng "foo.png" (withBits [-500,500]) (0,1000) (-1000,1000)
 ~~~
 
-![](../docs/img/rule30-2000x1000-b.png)
+![](docs/img/rule30-2000x1000-b.png)
 
 ~~~
 $> renderPng "foo.png" (withBits [0]) (1000,2000) (-1000,1000)
 ~~~
 
-![](../docs/img/rule30-2000x1000-c.png)
+![](docs/img/rule30-2000x1000-c.png)
