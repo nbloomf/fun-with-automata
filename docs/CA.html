@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Fun with automata</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <style type="text/css">
+  /* Kudos to Pascal Hertleif                  */
+  /* https://gist.github.com/killercup/5917178 */
+  
+  html {
+    font-size: 100%;
+    overflow-y: scroll;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  body {
+    color: #444;
+    font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+    font-size: 12px;
+    line-height: 1.7;
+    padding: 1em;
+    margin: auto;
+    max-width: 42em;
+    background: #fefefe;
+  }
+  
+  a {
+    color: #0645ad;
+    text-decoration: none;
+  }
+  
+  a:visited {
+    color: #0b0080;
+  }
+  
+  a:hover {
+    color: #06e;
+  }
+  
+  a:active {
+    color: #faa700;
+  }
+  
+  a:focus {
+    outline: thin dotted;
+  }
+  
+  *::-moz-selection {
+    background: rgba(255, 255, 0, 0.3);
+    color: #000;
+  }
+  
+  *::selection {
+    background: rgba(255, 255, 0, 0.3);
+    color: #000;
+  }
+  
+  a::-moz-selection {
+    background: rgba(255, 255, 0, 0.3);
+    color: #0645ad;
+  }
+  
+  a::selection {
+    background: rgba(255, 255, 0, 0.3);
+    color: #0645ad;
+  }
+  
+  p {
+    margin: 1em 0;
+  }
+  
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #111;
+    line-height: 125%;
+    margin-top: 2em;
+    font-weight: normal;
+  }
+  
+  h4, h5, h6 {
+    font-weight: bold;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+  }
+  
+  h2 {
+    font-size: 2em;
+  }
+  
+  h3 {
+    font-size: 1.5em;
+  }
+  
+  h4 {
+    font-size: 1.2em;
+  }
+  
+  h5 {
+    font-size: 1em;
+  }
+  
+  h6 {
+    font-size: 0.9em;
+  }
+  
+  blockquote {
+    display: block;
+    color: #666666;
+    margin: 0;
+    padding-left: 3em;
+    border-left: 0.5em #EEE solid;
+  }
+  
+  hr {
+    display: block;
+    height: 2px;
+    border: 0;
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #eee;
+    margin: 1em 0;
+    padding: 0;
+  }
+  
+  pre, code, kbd, samp {
+    color: #000;
+    font-family: monospace, monospace;
+    _font-family: 'courier new', monospace;
+    font-size: 0.98em;
+  }
+  
+  pre {
+    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  b, strong {
+    font-weight: bold;
+  }
+  
+  dfn {
+    font-style: italic;
+  }
+  
+  ins {
+    background: #ff9;
+    color: #000;
+    text-decoration: none;
+  }
+  
+  mark {
+    background: #ff0;
+    color: #000;
+    font-style: italic;
+    font-weight: bold;
+  }
+  
+  sub, sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+  }
+  
+  sup {
+    top: -0.5em;
+  }
+  
+  sub {
+    bottom: -0.25em;
+  }
+  
+  ul, ol {
+    margin: 1em 0;
+    padding: 0 0 0 2em;
+  }
+  
+  li p:last-child {
+    margin-bottom: 0;
+  }
+  
+  ul ul, ol ol {
+    margin: .3em 0;
+  }
+  
+  dl {
+    margin-bottom: 1em;
+  }
+  
+  dt {
+    font-weight: bold;
+    margin-bottom: .8em;
+  }
+  
+  dd {
+    margin: 0 0 .8em 2em;
+  }
+  
+  dd:last-child {
+    margin-bottom: 0;
+  }
+  
+  img {
+    border: 0;
+    -ms-interpolation-mode: bicubic;
+    vertical-align: middle;
+  }
+  
+  figure {
+    display: block;
+    text-align: center;
+    margin: 1em 0;
+  }
+  
+  figure img {
+    border: none;
+    margin: 0 auto;
+  }
+  
+  figcaption {
+    font-size: 0.8em;
+    font-style: italic;
+    margin: 0 0 .8em;
+  }
+  
+  table {
+    margin-bottom: 2em;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-spacing: 0;
+    border-collapse: collapse;
+  }
+  
+  table th {
+    padding: .2em 1em;
+    background-color: #eee;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+  }
+  
+  table td {
+    padding: .2em 1em;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    vertical-align: top;
+  }
+  
+  .author {
+    font-size: 1.2em;
+    text-align: center;
+  }
+  
+  .sourceCode {
+    background-color: #eee;
+  }
+  
+  @media only screen and (min-width: 480px) {
+    body {
+      font-size: 14px;
+    }
+  }
+  @media only screen and (min-width: 768px) {
+    body {
+      font-size: 16px;
+    }
+  }
+  @media print {
+    * {
+      background: transparent !important;
+      color: black !important;
+      filter: none !important;
+      -ms-filter: none !important;
+    }
+  
+    body {
+      font-size: 12pt;
+      max-width: 100%;
+    }
+  
+    a, a:visited {
+      text-decoration: underline;
+    }
+  
+    hr {
+      height: 1px;
+      border: 0;
+      border-bottom: 1px solid black;
+    }
+  
+    a[href]:after {
+      content: " (" attr(href) ")";
+    }
+  
+    abbr[title]:after {
+      content: " (" attr(title) ")";
+    }
+  
+    .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after {
+      content: "";
+    }
+  
+    pre, blockquote {
+      border: 1px solid #999;
+      padding-right: 1em;
+      page-break-inside: avoid;
+    }
+  
+    tr, img {
+      page-break-inside: avoid;
+    }
+  
+    img {
+      max-width: 100% !important;
+    }
+  
+    @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+  }
+  
+    @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+  }
+  
+    p, h2, h3 {
+      orphans: 3;
+      widows: 3;
+    }
+  
+    h2, h3 {
+      page-break-after: avoid;
+    }
+  }
+  </style>
+</head>
+<body>
+<header>
+<h1 class="title">Fun with automata</h1>
+</header>
+<p>Let’s draw some one dimensional cellular automata!</p>
+<p><img src="../docs/img/rule30-200x100.png" /></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">module</span> <span class="dt">CA</span> <span class="kw">where</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Codec.Picture</span> <span class="kw">as</span> <span class="dt">JP</span></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.List</span> <span class="kw">as</span> <span class="dt">L</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.Set</span> <span class="kw">as</span> <span class="dt">S</span></a></code></pre></div>
+<p>A <em>cellular automaton</em> is a discrete model of “space”. It consists of</p>
+<ul>
+<li>a (discrete) set of ‘locations’,</li>
+<li>a (discrete) set of ‘particles’ that can inhabit those locations,</li>
+<li>a (discrete) set of ‘laws of interaction’ that govern how the particles appear, move, and disappear, and</li>
+<li>a clock that measures time in discrete steps.</li>
+</ul>
+<p>It’s not too hard to see that these properties make cellular automata (CA for short) a very special and restricted model of how the universe appears to work. That’s not at all to say that the actual universe “is” a CA, any more than brains “are” neural networks; this is just a mathematical model that happens to do some cool stuff and show that complex rules are not necessary for systems to exhibit complex behavior.</p>
+<p>If a CA is small enough we can draw pictures of it, which is super fun! Conway’s <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>, <a href="https://en.wikipedia.org/wiki/Langton%27s_ant">Langston’s Ant</a>, and <a href="https://en.wikipedia.org/wiki/Wireworld">Wireworld</a> are super neato examples of cellular automata. These examples are also <em>two-dimensional</em>, because they take place on a square grid. (Although it turns out nailing down exactly what <em>dimension</em> means for a discrete space is surprisingly tricky!) Any particular configuration of the grid is a <em>generation</em>, and we can visualize time moving forward by animating the grid – one frame per generation.</p>
+<p>Even simpler are the <em>one-dimensional</em> automata. These inhabit a universe where every location in space corresponds to an integer, and the immediate neighbors of location <span class="math inline">\(k\)</span> are locations <span class="math inline">\(k-1\)</span> and <span class="math inline">\(k+1\)</span>. Now we can visualize the evolution of the automaton with a single static image – each generation is represented by a row of pixels, and time flows down.</p>
+<p>Let’s write some code that draws one-dimensional automata. To keep it simple we can restrict even further. Every CA needs, in addition to the space it inhabits, two pieces of information: the <em>state space</em> for each location, and the <em>rules</em> that govern how states change from one time step to the next. Typically the rules are set up so that states can only influence each other within some maximum <em>radius</em>.</p>
+<p>The simplest possible one-dimensional CA have two states (Black/White or On/Off) and the rules have radius 1. These very simple examples are sometimes called <a href="https://en.wikipedia.org/wiki/Elementary_cellular_automaton"><em>elementary</em></a>.</p>
+<h2 id="lets-do-the-thing">Let’s do the thing</h2>
+<p>We need a way to represent a single generation. Since our CA has only two states (On and Off) it’s enough to keep track of which cells are On, and since the space is one dimensional it’s enough to keep track of which integers have On cells in them. If we make the reasonably mild assumption that only finitely many cells can be on in a given generation, we can represent generations using finite sets of integers. As a minor optimization we’ll also keep track of the largest and smallest On cells. (I’m not sure this is necessary but it seemed like a good idea at the time!)</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">data</span> <span class="dt">Generation</span> <span class="fu">=</span> <span class="dt">G</span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2">  {<span class="ot"> borders ::</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- extreme set bits</span></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">  ,<span class="ot"> setBits ::</span> <span class="dt">S.Set</span> <span class="dt">Integer</span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">  } <span class="kw">deriving</span> <span class="dt">Show</span></a></code></pre></div>
+<p>Given a generation and a cell address, we can ask whether that cell is On or Off.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" data-line-number="1">isOn</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="ot">  ::</span> <span class="dt">Generation</span> <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3">isOn (<span class="dt">G</span> (lo,hi) m) k <span class="fu">=</span></a>
+<a class="sourceLine" id="cb3-4" data-line-number="4">  <span class="kw">if</span> (k <span class="fu">&lt;</span> lo) <span class="fu">||</span> (hi <span class="fu">&lt;</span> k)</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5">    <span class="kw">then</span> <span class="dt">False</span></a>
+<a class="sourceLine" id="cb3-6" data-line-number="6">    <span class="kw">else</span> S.member k m</a></code></pre></div>
+<p>Given a generation and a range of cell addresses, we can get a list of booleans representing the pattern of On and Off cells in those addresses.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" data-line-number="1">getGeneration</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="ot">  ::</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- render window</span></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">  <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb4-4" data-line-number="4">  <span class="ot">-&gt;</span> [<span class="dt">Bool</span>]</a>
+<a class="sourceLine" id="cb4-5" data-line-number="5">getGeneration (a, b) g <span class="fu">=</span></a>
+<a class="sourceLine" id="cb4-6" data-line-number="6">  map (isOn g) [a<span class="fu">..</span>b]</a></code></pre></div>
+<p>Finally, given a generation we can construct the <em>next</em> generation. In order to do this we need an update rule. For elementary CA the value of cell <span class="math inline">\(k\)</span> at time step <span class="math inline">\(i\)</span> depends only on the values of <span class="math inline">\(k-1\)</span>, <span class="math inline">\(k\)</span>, and <span class="math inline">\(k+1\)</span> at time step <span class="math inline">\(i-1\)</span>. So we can model the update rule using a single function that takes 3 booleans and returns a boolean. Also note that the boundary values expand by 1 at each step.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" data-line-number="1">nextGeneration</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="ot">  ::</span> (<span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="co">-- update rule</span></a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">  <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">  <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5">nextGeneration f (<span class="dt">G</span> (a,b) m) <span class="fu">=</span> <span class="dt">G</span> (a<span class="fu">-</span><span class="dv">1</span>, b<span class="fu">+</span><span class="dv">1</span>) <span class="fu">$</span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">  S.fromList <span class="fu">$</span> filter h [(a<span class="fu">-</span><span class="dv">1</span>)<span class="fu">..</span>(b<span class="fu">+</span><span class="dv">1</span>)]</a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">    <span class="kw">where</span></a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">      h i <span class="fu">=</span> f</a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">        (S.member (i<span class="fu">-</span><span class="dv">1</span>) m)</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">        (S.member i m)</a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">        (S.member (i<span class="fu">+</span><span class="dv">1</span>) m)</a></code></pre></div>
+<p>For visual debugging in the terminal, we also define a function that renders a single generation to text.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" data-line-number="1">renderGeneration</a>
+<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="ot">  ::</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- render window</span></a>
+<a class="sourceLine" id="cb6-3" data-line-number="3">  <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb6-4" data-line-number="4">  <span class="ot">-&gt;</span> <span class="dt">String</span></a>
+<a class="sourceLine" id="cb6-5" data-line-number="5">renderGeneration (a, b) g <span class="fu">=</span></a>
+<a class="sourceLine" id="cb6-6" data-line-number="6">  map renderCell <span class="fu">$</span> getGeneration (a,b) g</a>
+<a class="sourceLine" id="cb6-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb6-8" data-line-number="8">renderCell</a>
+<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="ot">  ::</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Char</span></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10">renderCell p <span class="fu">=</span></a>
+<a class="sourceLine" id="cb6-11" data-line-number="11">  <span class="kw">if</span> p <span class="kw">then</span> <span class="ch">&#39;X&#39;</span> <span class="kw">else</span> <span class="ch">&#39; &#39;</span></a></code></pre></div>
+<p>Now we can represent the future of a CA as a list of generations…</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">data</span> <span class="dt">History</span></a>
+<a class="sourceLine" id="cb7-2" data-line-number="2">  <span class="fu">=</span> <span class="dt">H</span> [<span class="dt">Generation</span>]</a></code></pre></div>
+<p>…and we can get a list of lists of booleans representing the state of the CA over a range of times and cell addresses.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb8-1" data-line-number="1">getHistory</a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="ot">  ::</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- height (time)</span></a>
+<a class="sourceLine" id="cb8-3" data-line-number="3">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- width (space)</span></a>
+<a class="sourceLine" id="cb8-4" data-line-number="4">  <span class="ot">-&gt;</span> <span class="dt">History</span></a>
+<a class="sourceLine" id="cb8-5" data-line-number="5">  <span class="ot">-&gt;</span> [[<span class="dt">Bool</span>]]</a>
+<a class="sourceLine" id="cb8-6" data-line-number="6">getHistory (u,v) w (<span class="dt">H</span> gs) <span class="fu">=</span></a>
+<a class="sourceLine" id="cb8-7" data-line-number="7">  map (getGeneration w) <span class="fu">$</span> L.genericTake (v<span class="fu">-</span>u) <span class="fu">$</span> L.genericDrop (u<span class="fu">-</span><span class="dv">1</span>) gs</a></code></pre></div>
+<p>Again, for debugging at the terminal here’s a function that renders a CA as a string.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1">renderHistory</a>
+<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="ot">  ::</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- height</span></a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>) <span class="co">-- width</span></a>
+<a class="sourceLine" id="cb9-4" data-line-number="4">  <span class="ot">-&gt;</span> <span class="dt">History</span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">  <span class="ot">-&gt;</span> <span class="dt">String</span></a>
+<a class="sourceLine" id="cb9-6" data-line-number="6">renderHistory (u,v) w g <span class="fu">=</span></a>
+<a class="sourceLine" id="cb9-7" data-line-number="7">  L.unlines <span class="fu">$</span> map (map renderCell) <span class="fu">$</span> getHistory (u,v) w g</a></code></pre></div>
+<p>Next we have a helper function that constructs the history of a CA from its initial state and update function.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1">populate</a>
+<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="ot">  ::</span> <span class="dt">Generation</span>                     <span class="co">-- first generation</span></a>
+<a class="sourceLine" id="cb10-3" data-line-number="3">  <span class="ot">-&gt;</span> (<span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="co">-- update rule</span></a>
+<a class="sourceLine" id="cb10-4" data-line-number="4">  <span class="ot">-&gt;</span> <span class="dt">History</span></a>
+<a class="sourceLine" id="cb10-5" data-line-number="5">populate initial update <span class="fu">=</span> <span class="dt">H</span> (f initial)</a>
+<a class="sourceLine" id="cb10-6" data-line-number="6">  <span class="kw">where</span></a>
+<a class="sourceLine" id="cb10-7" data-line-number="7"><span class="ot">    f ::</span> <span class="dt">Generation</span> <span class="ot">-&gt;</span> [<span class="dt">Generation</span>]</a>
+<a class="sourceLine" id="cb10-8" data-line-number="8">    f g <span class="fu">=</span> g <span class="fu">:</span> f (nextGeneration update g)</a></code></pre></div>
+<p>And a helper function for constructing the initial generation by supplying a list of set locations.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="ot">withBits ::</span> [<span class="dt">Integer</span>] <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb11-2" data-line-number="2">withBits bs <span class="fu">=</span> <span class="dt">G</span> (minimum bs, maximum bs) <span class="fu">$</span> S.fromList bs</a></code></pre></div>
+<p>We’re almost there. The only remaining bit is to define at least one specific update rule. For elementary CA there are only <span class="math inline">\(256 = 2^8\)</span> possible rules, which have a natural indexing scheme. Most of the possible rules are not very interesting, but one particularly cool example is the so-called <em>rule 30</em>, defined like this:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb12-1" data-line-number="1"><span class="ot">rule30 ::</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span></a>
+<a class="sourceLine" id="cb12-2" data-line-number="2">rule30 p1 p2 p3 <span class="fu">=</span> <span class="kw">case</span> (p1, p2, p3) <span class="kw">of</span></a>
+<a class="sourceLine" id="cb12-3" data-line-number="3">  (<span class="dt">True</span>,  <span class="dt">True</span>,  <span class="dt">True</span>)  <span class="ot">-&gt;</span> <span class="dt">False</span></a>
+<a class="sourceLine" id="cb12-4" data-line-number="4">  (<span class="dt">True</span>,  <span class="dt">True</span>,  <span class="dt">False</span>) <span class="ot">-&gt;</span> <span class="dt">False</span></a>
+<a class="sourceLine" id="cb12-5" data-line-number="5">  (<span class="dt">True</span>,  <span class="dt">False</span>, <span class="dt">True</span>)  <span class="ot">-&gt;</span> <span class="dt">False</span></a>
+<a class="sourceLine" id="cb12-6" data-line-number="6">  (<span class="dt">True</span>,  <span class="dt">False</span>, <span class="dt">False</span>) <span class="ot">-&gt;</span> <span class="dt">True</span></a>
+<a class="sourceLine" id="cb12-7" data-line-number="7">  (<span class="dt">False</span>, <span class="dt">True</span>,  <span class="dt">True</span>)  <span class="ot">-&gt;</span> <span class="dt">True</span></a>
+<a class="sourceLine" id="cb12-8" data-line-number="8">  (<span class="dt">False</span>, <span class="dt">True</span>,  <span class="dt">False</span>) <span class="ot">-&gt;</span> <span class="dt">True</span></a>
+<a class="sourceLine" id="cb12-9" data-line-number="9">  (<span class="dt">False</span>, <span class="dt">False</span>, <span class="dt">True</span>)  <span class="ot">-&gt;</span> <span class="dt">True</span></a>
+<a class="sourceLine" id="cb12-10" data-line-number="10">  (<span class="dt">False</span>, <span class="dt">False</span>, <span class="dt">False</span>) <span class="ot">-&gt;</span> <span class="dt">False</span></a></code></pre></div>
+<p>To actually visualize the evolution of a CA we’ll define two more helpers. First we render CA as ascii text at the terminal.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb13-1" data-line-number="1">renderAscii</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="ot">  ::</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb13-3" data-line-number="3">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>)</a>
+<a class="sourceLine" id="cb13-4" data-line-number="4">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>)</a>
+<a class="sourceLine" id="cb13-5" data-line-number="5">  <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb13-6" data-line-number="6">renderAscii initial (u,v) (a,b) <span class="fu">=</span></a>
+<a class="sourceLine" id="cb13-7" data-line-number="7">  putStrLn <span class="fu">$</span> renderHistory (u,v) (a,b) <span class="fu">$</span> populate initial rule30</a></code></pre></div>
+<p>For example:</p>
+<pre><code>$&gt; renderAscii (withBits [0]) (0,10) (-10,10)
+          X          
+         XXX         
+        XX  X        
+       XX XXXX       
+      XX  X   X      
+     XX XXXX XXX     
+    XX  X    X  X    
+   XX XXXX  XXXXXX   
+  XX  X   XXX     X  
+ XX XXXX XX  X   XXX
+
+$&gt; renderAscii (withBits [-7,7]) (0,10) (-10,10)
+   X             X   
+  XXX           XXX  
+ XX  X         XX  X 
+XX XXXX       XX XXXX
+X  X   X     XX  X   
+ XXXX XXX   XX XXXX X
+ X    X  X XX  X    X
+XXX  XXXXX X XXXX  XX
+   XXX     X X   XXX 
+X XX  X   XX XX XX  X
+
+$&gt; renderAscii (withBits [-12,0,12]) (0,20) (-20,20)
+        X           X           X        
+       XXX         XXX         XXX       
+      XX  X       XX  X       XX  X      
+     XX XXXX     XX XXXX     XX XXXX     
+    XX  X   X   XX  X   X   XX  X   X    
+   XX XXXX XXX XX XXXX XXX XX XXXX XXX   
+  XX  X    X   X  X    X   X  X    X  X  
+ XX XXXX  XXX XXXXXX  XXX XXXXXX  XXXXXX 
+XX  X   XXX   X     XXX   X     XXX     X
+X XXXX XX  X XXX   XX  X XXX   XX  X   XX
+  X    X XXX X  X XX XXX X  X XX XXXX XX 
+XXXX  XX X   XXXX X  X   XXXX X  X    X X
+X   XXX  XX XX    XXXXX XX    XXXXX  XX X
+XX XX  XXX  X X  XX     X X  XX    XXX  X
+   X XXX  XXX XXXX X   XX XXXX X  XX  XXX
+  XX X  XXX   X    XX XX  X    XXXX XXX  
+XXX  XXXX  X XXX  XX  X XXXX  XX    X  XX
+X  XXX   XXX X  XXX XXX X   XXX X  XXXXX 
+ XXX  X XX   XXXX   X   XX XX   XXXX    X
+ X  XXX X X XX   X XXX XX  X X XX   X  XX</code></pre>
+<p>Neat! But the chunky resolution of text means there’s a pretty low limit to how much of the CA’s history we can see at once. To get around this we can also render them as PNGs:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb15-1" data-line-number="1">renderPng</a>
+<a class="sourceLine" id="cb15-2" data-line-number="2"><span class="ot">  ::</span> FilePath</a>
+<a class="sourceLine" id="cb15-3" data-line-number="3">  <span class="ot">-&gt;</span> <span class="dt">Generation</span></a>
+<a class="sourceLine" id="cb15-4" data-line-number="4">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>)</a>
+<a class="sourceLine" id="cb15-5" data-line-number="5">  <span class="ot">-&gt;</span> (<span class="dt">Integer</span>, <span class="dt">Integer</span>)</a>
+<a class="sourceLine" id="cb15-6" data-line-number="6">  <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</a>
+<a class="sourceLine" id="cb15-7" data-line-number="7">renderPng path initial (h1, h2) (w1, w2) <span class="fu">=</span> <span class="kw">do</span></a>
+<a class="sourceLine" id="cb15-8" data-line-number="8">  <span class="kw">let</span></a>
+<a class="sourceLine" id="cb15-9" data-line-number="9">    imgWidth  <span class="fu">=</span> fromIntegral <span class="fu">$</span> w2 <span class="fu">-</span> w1</a>
+<a class="sourceLine" id="cb15-10" data-line-number="10">    imgHeight <span class="fu">=</span> fromIntegral <span class="fu">$</span> h2 <span class="fu">-</span> h1</a>
+<a class="sourceLine" id="cb15-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb15-12" data-line-number="12">    png <span class="fu">=</span> JP.generateImage px imgWidth imgHeight</a>
+<a class="sourceLine" id="cb15-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb15-14" data-line-number="14">    h <span class="fu">=</span> getHistory (h1, h2) (w1, w2) <span class="fu">$</span> populate initial rule30</a>
+<a class="sourceLine" id="cb15-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb15-16" data-line-number="16">    px i j <span class="fu">=</span> <span class="kw">if</span> (h <span class="fu">!!</span> j) <span class="fu">!!</span> i</a>
+<a class="sourceLine" id="cb15-17" data-line-number="17">      <span class="kw">then</span> <span class="dt">JP.PixelRGB8</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span></a>
+<a class="sourceLine" id="cb15-18" data-line-number="18">      <span class="kw">else</span> <span class="dt">JP.PixelRGB8</span> <span class="dv">255</span> <span class="dv">255</span> <span class="dv">255</span></a>
+<a class="sourceLine" id="cb15-19" data-line-number="19">  JP.savePngImage path (<span class="dt">JP.ImageRGB8</span> png)</a></code></pre></div>
+<p>Here’s some examples. These take a few seconds to render. (View image to zoom in!)</p>
+<pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [0]) (0,1000) (-1000,1000)</code></pre>
+<p><img src="../docs/img/rule30-2000x1000.png" /></p>
+<pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [-500,500]) (0,1000) (-1000,1000)</code></pre>
+<p><img src="../docs/img/rule30-2000x1000-b.png" /></p>
+<pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [0]) (1000,2000) (-1000,1000)</code></pre>
+<p><img src="../docs/img/rule30-2000x1000-c.png" /></p>
+</body>
+</html>
