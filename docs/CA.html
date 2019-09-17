@@ -423,7 +423,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1 class="title">Fun with automata</h1>
 </header>
 <p>Let’s draw some one dimensional cellular automata!</p>
-<p><img src="../docs/img/rule30-200x100.png" /></p>
+<p><img src="fun-with-automata/img/rule30-200x100.png" /></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">module</span> <span class="dt">CA</span> <span class="kw">where</span></a>
 <a class="sourceLine" id="cb1-2" data-line-number="2"></a>
 <a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Codec.Picture</span> <span class="kw">as</span> <span class="dt">JP</span></a>
@@ -603,10 +603,10 @@ X  XXX   XXX X  XXX XXX X   XXX X  XXXXX
 <a class="sourceLine" id="cb15-19" data-line-number="19">  JP.savePngImage path (<span class="dt">JP.ImageRGB8</span> png)</a></code></pre></div>
 <p>Here’s some examples. These take a few seconds to render. (View image to zoom in!)</p>
 <pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [0]) (0,1000) (-1000,1000)</code></pre>
-<p><img src="../docs/img/rule30-2000x1000.png" /></p>
+<p><img src="fun-with-automata/img/rule30-2000x1000.png" /></p>
 <pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [-500,500]) (0,1000) (-1000,1000)</code></pre>
-<p><img src="../docs/img/rule30-2000x1000-b.png" /></p>
+<p><img src="fun-with-automata/img/rule30-2000x1000-b.png" /></p>
 <pre><code>$&gt; renderPng &quot;foo.png&quot; (withBits [0]) (1000,2000) (-1000,1000)</code></pre>
-<p><img src="../docs/img/rule30-2000x1000-c.png" /></p>
+<p><img src="fun-with-automata/img/rule30-2000x1000-c.png" /></p>
 </body>
 </html>
