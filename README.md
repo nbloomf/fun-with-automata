@@ -1,4 +1,4 @@
 fun with cellular automata
 --------------------------
 
-[Read it here!](docs/CA.html)
+[Read it here!](http://nbloomf.blog/fun-with-automata/CA.html)
